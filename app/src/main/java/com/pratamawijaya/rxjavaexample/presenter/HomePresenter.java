@@ -48,4 +48,20 @@ public class HomePresenter extends BasePresenter<IHomeView> {
           Timber.d("getRecentPosts() : completed ");
         }));
   }
+
+  public void searchPost(final String query) {
+    checkViewAttached();
+    getMvpView().showLoading();
+    compositeSubscription.add(dataManager.searchPost(query)
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(posts -> {
+          getMvpView().hideLoading();
+          if (posts != null) {
+            getMvpView().handleSearch(posts);
+          }
+        }, throwable -> {
+          Timber.e("searchPost() :  %s", throwable.getLocalizedMessage());
+        }));
+  }
 }

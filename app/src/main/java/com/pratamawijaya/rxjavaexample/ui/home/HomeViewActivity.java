@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.view.Menu;
+import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.jakewharton.rxbinding.support.v7.widget.RxSearchView;
@@ -19,6 +20,7 @@ import com.pratamawijaya.rxjavaexample.presenter.HomePresenter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.CompositeSubscription;
 import timber.log.Timber;
 
@@ -71,18 +73,18 @@ public class HomeViewActivity extends AppCompatActivity implements IHomeView {
 
   private void setupSearchView(SearchView searchView) {
     compositeSubscription.add(RxSearchView.queryTextChanges(searchView)
+        .debounce(450, TimeUnit.MILLISECONDS)
         .filter(text -> !TextUtils.isEmpty(text))
-        .debounce(250, TimeUnit.MILLISECONDS)
-        .flatMap(query -> dataManager.searchPost(query.toString()))
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(posts -> {
-          handleResultSearch(posts);
+          Timber.d("setupSearchView() :  %s", posts.toString());
+          handleResultSearch(posts.toString());
         }));
   }
 
-  private void handleResultSearch(List<Post> posts) {
-    for (Post data : posts) {
-      Timber.d("handleResultSearch() :  %s", data.title);
-    }
+  private void handleResultSearch(String search) {
+    presenter.searchPost(search);
+    Toast.makeText(HomeViewActivity.this, "" + search, Toast.LENGTH_SHORT).show();
   }
 
   @Override protected void onDestroy() {
@@ -104,6 +106,12 @@ public class HomeViewActivity extends AppCompatActivity implements IHomeView {
   }
 
   @Override public void setData(List<Post> posts) {
+    this.posts.addAll(posts);
+    adapter.notifyDataSetChanged();
+  }
+
+  @Override public void handleSearch(List<Post> posts) {
+    this.posts.clear();
     this.posts.addAll(posts);
     adapter.notifyDataSetChanged();
   }

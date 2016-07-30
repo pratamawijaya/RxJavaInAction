@@ -13,4 +13,6 @@ public interface IHomeView extends MvpView {
   void hideLoading();
 
   void setData(List<Post> posts);
+
+  void handleSearch(List<Post> posts);
 }

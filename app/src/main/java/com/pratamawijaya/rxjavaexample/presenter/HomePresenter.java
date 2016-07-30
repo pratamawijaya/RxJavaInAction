@@ -32,6 +32,7 @@ public class HomePresenter extends BasePresenter<IHomeView> {
 
   public void getRecentPosts(final int page) {
     checkViewAttached();
+    getMvpView().showLoading();
     compositeSubscription.add(dataManager.getRecentPosts(page)
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())

@@ -73,14 +73,10 @@ public class HomeViewActivity extends AppCompatActivity implements IHomeView {
     compositeSubscription.add(RxSearchView.queryTextChanges(searchView)
         .filter(text -> !TextUtils.isEmpty(text))
         .debounce(250, TimeUnit.MILLISECONDS)
-        .flatMap(query -> dataManager.searchPost(query.toString()))
-        .subscribe(posts -> {
-          if (posts != null) {
-            setData(posts);
-          }
-        }, throwable -> {
-          Timber.e("setupSearchView() :  %s", throwable.getLocalizedMessage());
-        }));
+        .subscribe(charSequence -> {
+          Timber.d("setupSearchView() :  %s", charSequence.toString());
+        })
+    );
   }
 
   @Override protected void onDestroy() {
